@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Kill - Control Panel</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e24; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background-color: #2b2b36; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 500px; }
+        h2 { color: #f7ca18; margin-top: 0; text-align: center; }
+        label { display: block; margin-bottom: 10px; font-size: 16px; color: #ccc; }
+        input { width: 100%; padding: 12px; margin-bottom: 20px; border: none; border-radius: 6px; font-size: 18px; box-sizing: border-box; background: #1e1e24; color: white; border: 1px solid #444; }
+        button { width: 100%; background-color: #f7ca18; color: #000; border: none; padding: 15px; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background-color: #e8bc0d; }
+        .result-box { margin-top: 25px; padding: 20px; background-color: #111; border-radius: 8px; border-left: 4px solid #f7ca18; display: none; }
+        .result-box p { margin: 0 0 10px 0; font-size: 14px; color: #aaa; }
+        .result-box a { color: #f7ca18; word-break: break-all; font-size: 16px; text-decoration: none; }
+        .result-box a:hover { text-decoration: underline; }
+        .copy-btn { margin-top: 15px; background-color: #4caf50; color: white; font-size: 16px; padding: 10px; }
+        .copy-btn:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>PUBG First Kill Generator</h2>
+        <label for="tourney-id">Enter Tournament ID:</label>
+        <input type="text" id="tourney-id" placeholder="e.g., sea-ctf1, am-pas126">
+        <button onclick="generateLink()">Generate Link for OBS</button>
+
+        <div class="result-box" id="result-box">
+            <p>Use this link in your OBS Browser Source (or share it with the team):</p>
+            <a id="obs-link" href="#" target="_blank"></a>
+            <button class="copy-btn" onclick="copyLink()">📋 Copy Link</button>
+        </div>
+    </div>
+
+    <script>
+        function generateLink() {
+            const id = document.getElementById('tourney-id').value.trim() || 'sea-ctf1';
+            const currentUrl = window.location.href;
+            const baseUrl = currentUrl.replace('control.html', 'index.html');
+            const finalUrl = `${baseUrl}?id=${id}`;
+            
+            const linkElement = document.getElementById('obs-link');
+            linkElement.innerText = finalUrl;
+            linkElement.href = finalUrl;
+            document.getElementById('result-box').style.display = 'block';
+        }
+
+        function copyLink() {
+            const linkText = document.getElementById('obs-link').innerText;
+            navigator.clipboard.writeText(linkText).then(() => {
+                alert('Link copied to clipboard! You can now paste it into OBS.');
+            });
+        }
+    </script>
+</body>
+</html>
