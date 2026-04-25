@@ -3,15 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PUBG First Kill Overlay</title>
-    <link rel="stylesheet" href="style.css">
+    <title>PUBG First Kill - Unified System</title>
+    <style>
+        /* --- CSS: ฟอนต์และพื้นหลัง --- */
+        @font-face {
+            font-family: 'Transducer';
+            src: url('transducer-condensedbold.otf') format('opentype');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            font-family: 'Transducer', 'Segoe UI', sans-serif; 
+            background-color: transparent; 
+        }
+
+        /* --- CSS: หน้า Control Panel --- */
+        #control-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1e1e24;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+        }
+
+        .card {
+            background-color: #2b2b36;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h2 { color: #f7ca18; margin-top: 0; }
+        label { display: block; margin-bottom: 10px; font-size: 16px; color: #ccc; }
+        input { 
+            width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 6px; 
+            font-size: 18px; box-sizing: border-box; background: #1e1e24; color: white; border: 1px solid #444; 
+        }
+        .btn-generate { 
+            width: 100%; background-color: #f7ca18; color: #000; border: none; 
+            padding: 15px; border-radius: 6px; font-size: 18px; font-weight: bold; cursor: pointer; 
+        }
+        .share-box {
+            margin-top: 20px; padding: 15px; background: #111; border-radius: 8px; 
+            display: none; font-family: sans-serif; font-size: 14px;
+        }
+        .share-box a { color: #f7ca18; word-break: break-all; text-decoration: none; }
+
+        /* --- CSS: กราฟิก Overlay --- */
+        #first-kill-wrapper {
+            position: absolute;
+            bottom: -300px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 500px; 
+            height: 160px;
+            opacity: 0; 
+        }
+
+        .animate-in { animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-out { animation: slideDown 0.6s cubic-bezier(0.5, 0, 0.1, 1) forwards; }
+
+        @keyframes slideUp { 0% { bottom: -300px; opacity: 0; } 100% { bottom: 60px; opacity: 1; } }
+        @keyframes slideDown { 0% { bottom: 60px; opacity: 1; } 100% { bottom: -300px; opacity: 0; } }
+
+        .fk-main-panel {
+            width: 100%; display: flex; flex-direction: column; position: relative;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+        }
+
+        .fk-top-purple {
+            background: linear-gradient(90deg, #ea9f00 0%, #ea9f00 100%);
+            height: 90px; display: flex; align-items: center; padding-left: 25px;
+            clip-path: polygon(0 0, 100% 0, 96% 100%, 0% 100%); 
+        }
+
+        .team-logo { height: 65px; width: 65px; object-fit: contain; margin-right: 15px; }
+
+        .fk-title { color: white; font-size: 64px; font-style: italic; letter-spacing: 1px; line-height: 1; margin-left: 30px; }
+
+        .fk-bottom-white {
+            background-color: white; height: 60px; display: flex; align-items: center;
+            justify-content: center; clip-path: polygon(0 0, 96% 0, 92% 100%, 0% 100%); margin-top: -2px;
+        }
+
+        .player-name { color: #000000; font-size: 38px; font-style: italic; white-space: nowrap; line-height: 1; padding-bottom: 6px; }
+
+        .fk-yellow-accent {
+            position: absolute; bottom: -6px; left: 0; width: 120px; height: 12px;
+            background-color: #f7ca18; clip-path: polygon(0 0, 100% 0, 85% 100%, 0% 100%);
+        }
+    </style>
 </head>
 <body>
+
+    <div id="control-layer">
+        <div class="card">
+            <h2>First Kill Generator</h2>
+            <label>Enter Tournament ID:</label>
+            <input type="text" id="tourney-id" placeholder="e.g., sea-ctf1">
+            <button class="btn-generate" onclick="startOverlayFromUI()">Start & Save</button>
+            
+            <div class="share-box" id="share-box">
+                <p style="color: #888;">Shareable Link for OBS:</p>
+                <a id="obs-link" href="#"></a>
+            </div>
+        </div>
+    </div>
 
     <div id="first-kill-wrapper">
         <div class="fk-main-panel">
             <div class="fk-top-purple">
-                <img id="fk-team-logo" src="" alt="Team Logo" class="team-logo">
+                <img id="fk-team-logo" src="" alt="" class="team-logo">
                 <div class="fk-title">FIRST KILL</div>
             </div>
             <div class="fk-bottom-white">
@@ -21,6 +136,129 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // --- การตั้งค่า ---
+        const BASE_IMAGE_URL = "assets/"; 
+        const LOGO_FOLDER = "team_logos/";
+        const EXTENSION = ".png"; 
+        const TEST_MODE = false; 
+
+        let isFirstKillTriggered = false; 
+        let previousPlayersKills = {}; 
+        let currentMatchId = null; 
+        let API_URL = "";
+
+        // --- ระบบจัดการ UI และ URL ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const idFromUrl = urlParams.get('id');
+
+        window.onload = () => {
+            if (idFromUrl) {
+                // ถ้ามี ID ใน URL ให้เริ่มงานทันทีและซ่อนหน้า Control
+                document.getElementById('control-layer').style.display = 'none';
+                initSystem(idFromUrl);
+            }
+        };
+
+        function startOverlayFromUI() {
+            const id = document.getElementById('tourney-id').value.trim() || 'sea-ctf1';
+            
+            // สร้างลิงก์แชร์
+            const shareUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
+            document.getElementById('obs-link').innerText = shareUrl;
+            document.getElementById('obs-link').href = shareUrl;
+            document.getElementById('share-box').style.display = 'block';
+
+            // เริ่มทำงาน Overlay
+            document.getElementById('control-layer').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('control-layer').style.display = 'none';
+                initSystem(id);
+            }, 500);
+        }
+
+        function initSystem(tournamentId) {
+            API_URL = `https://domestic.atum.live/api/pubg/liveleaderboard?account_id=nattapon7799&series=${tournamentId}&tournament_id=${tournamentId}&mode=post&all_teams=true`;
+            
+            if (TEST_MODE) {
+                setTimeout(() => {
+                    triggerFirstKill("FW", "FW_Conaxy_Test_Name"); 
+                    setTimeout(() => { isFirstKillTriggered = false; }, 7000);
+                }, 1000);
+            }
+            setInterval(fetchFirstKillData, 2000);
+        }
+
+        // --- ลอจิก First Kill ---
+        function triggerFirstKill(teamAbbr, playerName) {
+            const wrapper = document.getElementById('first-kill-wrapper');
+            const logoImg = document.getElementById('fk-team-logo');
+            const nameText = document.getElementById('fk-player-name');
+
+            nameText.innerText = playerName;
+            logoImg.src = `${BASE_IMAGE_URL}${LOGO_FOLDER}${teamAbbr}${EXTENSION}`;
+
+            let currentFontSize = 38;
+            nameText.style.fontSize = currentFontSize + 'px';
+            const MAX_TEXT_WIDTH = 380; 
+            while (nameText.scrollWidth > MAX_TEXT_WIDTH && currentFontSize > 14) {
+                currentFontSize--;
+                nameText.style.fontSize = currentFontSize + 'px';
+            }
+
+            wrapper.classList.remove('animate-in', 'animate-out');
+            void wrapper.offsetWidth; 
+            wrapper.classList.add('animate-in');
+
+            setTimeout(() => {
+                wrapper.classList.remove('animate-in');
+                wrapper.classList.add('animate-out');
+            }, 6000);
+        }
+
+        async function fetchFirstKillData() {
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                if (!result.data) return;
+
+                const fetchedMatchId = result.data.matchId;
+                if (!currentMatchId && fetchedMatchId) currentMatchId = fetchedMatchId;
+
+                if (fetchedMatchId && currentMatchId !== fetchedMatchId) {
+                    currentMatchId = fetchedMatchId;
+                    isFirstKillTriggered = false;
+                    previousPlayersKills = {};
+                    return; 
+                }
+
+                if (isFirstKillTriggered || !result.data.teams) return;
+                const teams = result.data.teams;
+
+                if (Object.keys(previousPlayersKills).length === 0) {
+                    teams.forEach(t => t.players.forEach(p => previousPlayersKills[p.name] = p.match_kills || 0));
+                    return; 
+                }
+
+                let foundKillerName, foundKillerTeam;
+                for (const team of teams) {
+                    for (const player of team.players) {
+                        let cur = player.match_kills || 0;
+                        let prev = previousPlayersKills[player.name] || 0;
+                        if (cur > prev && prev === 0 && !foundKillerName) {
+                            foundKillerName = player.name;
+                            foundKillerTeam = team.team_tag;
+                        }
+                        previousPlayersKills[player.name] = cur;
+                    }
+                }
+
+                if (foundKillerName && !isFirstKillTriggered) {
+                    isFirstKillTriggered = true; 
+                    triggerFirstKill(foundKillerTeam, foundKillerName);
+                }
+            } catch (e) { console.error("API Error:", e); }
+        }
+    </script>
 </body>
 </html>
