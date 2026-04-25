@@ -1,20 +1,20 @@
-const BASE_IMAGE_URL = "http://localhost/Keng/assets/"; 
+// เปลี่ยน BASE_IMAGE_URL ให้เป็น relative path เพื่อให้รองรับ GitHub Pages
+const BASE_IMAGE_URL = "assets/"; 
 const LOGO_FOLDER = "team_logos/";
 const EXTENSION = ".png"; 
 
-// เปลี่ยนเป็น false เมื่อเริ่มใช้งานแข่งขันจริง
-const TEST_MODE = false; 
+// 🛑 TEST_MODE เปลี่ยนเป็น false ตอนใช้งานจริง
+const TEST_MODE = true; 
 
 // ==========================================
-// 🔍 ระบบอ่าน Tournament ID จาก URL ลิงก์
+// 🔍 ระบบอ่าน Tournament ID จาก URL
 // ==========================================
 const urlParams = new URLSearchParams(window.location.search);
-const currentTournamentId = urlParams.get('id') || "sea-ctf1"; // ถ้าไม่มีการใส่มา จะใช้ sea-ctf1 เป็นค่าเริ่มต้น
+const currentTournamentId = urlParams.get('id') || "sea-ctf1"; 
 
 const API_URL = `https://domestic.atum.live/api/pubg/liveleaderboard?account_id=nattapon7799&series=${currentTournamentId}&tournament_id=${currentTournamentId}&mode=post&all_teams=true`;
 console.log("Current Tournament ID:", currentTournamentId);
 
-// ตัวแปรระบบ
 let isFirstKillTriggered = false; 
 let previousPlayersKills = {}; 
 let currentMatchId = null; 
@@ -27,7 +27,7 @@ function triggerFirstKill(teamAbbr, playerName) {
     nameText.innerText = playerName;
     logoImg.src = `${BASE_IMAGE_URL}${LOGO_FOLDER}${teamAbbr}${EXTENSION}`;
 
-    // 2. ระบบ Auto-Resize ชื่อผู้เล่น
+    // ระบบบีบขนาดฟอนต์อัตโนมัติ
     let currentFontSize = 38;
     nameText.style.fontSize = currentFontSize + 'px';
     const MAX_TEXT_WIDTH = 380; 
@@ -61,7 +61,7 @@ async function fetchFirstKillData() {
         }
 
         if (fetchedMatchId && currentMatchId !== fetchedMatchId) {
-            console.log("เริ่มเกมใหม่! รีเซ็ตระบบ First Kill");
+            console.log("New match started! Resetting First Kill.");
             currentMatchId = fetchedMatchId;
             isFirstKillTriggered = false;
             previousPlayersKills = {};
@@ -113,7 +113,7 @@ async function fetchFirstKillData() {
 window.onload = () => {
     if (TEST_MODE) {
         setTimeout(() => {
-            triggerFirstKill("FW", "FW_Conaxy_Test_LongName_yg"); 
+            triggerFirstKill("FW", "FW_Conaxy_Test_Name"); 
             setTimeout(() => { isFirstKillTriggered = false; }, 7000);
         }, 1000);
     }
