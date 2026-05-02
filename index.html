@@ -3,172 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PUBG First Kill Overlay - GitHub Version</title>
-    
+    <title>First Kill Overlay Generator</title>
     <style>
-        /* ฟอนต์อยู่ในโฟลเดอร์เดียวกับไฟล์นี้บน GitHub */
-        @font-face {
-            font-family: 'Transducer';
-            src: url('transducer-condensedbold.otf') format('opentype');
-            font-weight: bold;
-            font-style: normal;
-        }
-
         body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background-color: transparent;
-            font-family: 'Transducer', 'Arial', sans-serif;
-        }
-
-        /* --- CONTROL PANEL --- */
-        #generator-ui {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.85);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e1e2f;
             color: white;
-            padding: 15px;
-            border-radius: 8px;
-            z-index: 9999;
-            width: 300px;
-            font-family: 'Arial', sans-serif;
-            border: 1px solid #000000;
-        }
-        #generator-ui h3 { margin: 0 0 10px 0; font-size: 16px; color: #dfad49; }
-        #generator-ui input { width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: none; box-sizing: border-box; }
-        #generator-ui button { background: #000000; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; width: 100%; }
-        #generator-ui .link-box { margin-top: 10px; background: #222; padding: 10px; font-size: 11px; word-break: break-all; border: 1px dashed #555; display: none; }
-        .hide-ui { display: none !important; }
-
-        /* --- OVERLAY UI --- */
-        #first-kill-container {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-        .first-kill-box {
-            display: flex;
-            background: linear-gradient(90deg, rgba(235,198,103,1) 0%, rgba(255,255,255,1) 100%);
-            border-bottom: 6px solid #ebc90b;
-            width: 500px;
-            height: 100px;
-            box-shadow: 0px 10px 20px rgba(0,0,0,0.5);
-            position: relative;
-            border-radius: 4px;
+        .container {
+            background-color: #2a2a40;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 400px;
+            text-align: center;
         }
-        .logo-section {
-            width: 120px;
-            background-color: #705826;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 4px 0 0 4px;
+        input[type="text"] {
+            width: 90%;
+            padding: 10px;
+            margin: 15px 0;
+            border: none;
+            border-radius: 5px;
+            background: #151521;
+            color: white;
+            font-size: 16px;
         }
-        .logo-section img { max-width: 80px; max-height: 80px; }
-        .info-section { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding-left: 25px; transform: translateY(4px); }
-        .title { font-size: 40px; font-weight: 900; color: #000000; font-style: italic; text-shadow: 1.5px 1.5px 0px #fff; line-height: 1; letter-spacing: 2px; }
-        .player-name { font-size: 30px; font-weight: bold; color: #222; margin-top: 0px; }
-        .hidden { display: none !important; }
-
-        /* --- ANIMATIONS --- */
-        .slide-up .first-kill-box { animation: slideUpBox 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        .slide-up .anim-item { opacity: 0; }
-        .slide-up .anim-logo { animation: fadeSlideRight 0.5s ease-out 0.3s forwards; }
-        .slide-up .anim-text { animation: fadeSlideRight 0.5s ease-out 0.45s forwards; }
-        @keyframes slideUpBox { 0% { transform: translateY(150px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
-        @keyframes fadeSlideRight { 0% { transform: translateX(-20px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
-        .slide-down .first-kill-box { animation: slideDownBox 0.5s ease-in forwards; }
-        @keyframes slideDownBox { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(150px); opacity: 0; } }
+        button {
+            background-color: #e5c100;
+            color: black;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #ffd700;
+        }
+        .result-box {
+            margin-top: 20px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <div id="generator-ui">
-        <h3>Tournament Generator</h3>
-        <input type="text" id="t-id-input" placeholder="Tournament ID (เช่น sea-ctf1)">
-        <button onclick="generateLink()">สร้างลิงก์สำหรับ OBS</button>
-        <div id="result-link" class="link-box"></div>
-        <p style="font-size: 10px; color: #aaa; margin-top: 5px;">* กดแป้น 'H' เพื่อซ่อน/แสดงแผงนี้</p>
+<div class="container">
+    <h2>🎯 First Kill Generator</h2>
+    <p>ระบุ Tournament ID</p>
+    <input type="text" id="tourId" placeholder="เช่น sea-thsc">
+    <button onclick="generateLink()">สร้างลิงก์สำหรับ OBS</button>
+
+    <div class="result-box" id="resultBox">
+        <p>นำลิงก์นี้ไปใส่ใน OBS Browser Source:</p>
+        <input type="text" id="obsLink" readonly onclick="this.select(); document.execCommand('copy'); alert('คัดลอกแล้ว!');">
     </div>
+</div>
 
-    <div id="first-kill-container" class="hidden">
-        <div class="first-kill-box">
-            <div class="logo-section anim-item anim-logo">
-                <img id="team-logo" src="" alt="">
-            </div>
-            <div class="info-section anim-item anim-text">
-                <div class="title">FIRST KILL</div>
-                <div id="player-name" class="player-name">PLAYER_NAME</div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        let tournamentId = urlParams.get('tournament_id') || 'sea-ctf1';
-        if (urlParams.get('ui') === 'hide') document.getElementById('generator-ui').classList.add('hide-ui');
-
-        function generateLink() {
-            const id = document.getElementById('t-id-input').value.trim();
-            if (!id) return alert('กรุณากรอก ID');
-            const base = window.location.href.split('?')[0];
-            const finalUrl = `${base}?tournament_id=${id}&ui=hide`;
-            const linkBox = document.getElementById('result-link');
-            linkBox.style.display = 'block';
-            linkBox.innerText = finalUrl;
+<script>
+    function generateLink() {
+        const tourId = document.getElementById('tourId').value.trim();
+        if(!tourId) {
+            alert('กรุณาใส่ Tournament ID');
+            return;
         }
+        // ดึง path ปัจจุบันเพื่อสร้างลิงก์ overlay
+        const baseUrl = window.location.href.replace('index.html', '').replace(/\/$/, '');
+        const finalUrl = `${baseUrl}/overlay.html?tournament_id=${tourId}`;
+        
+        document.getElementById('obsLink').value = finalUrl;
+        document.getElementById('resultBox').style.display = 'block';
+    }
+</script>
 
-        window.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'h') document.getElementById('generator-ui').classList.toggle('hide-ui');
-        });
-
-        let hasFirstKill = false;
-        const apiUrl = `https://domestic.atum.live/api/pubg/liveleaderboard?account_id=nattapon7799&series=${tournamentId}&tournament_id=${tournamentId}&mode=live&all_teams=true`;
-
-        async function checkFirstKill() {
-            if (hasFirstKill) return; 
-            try {
-                const response = await fetch(apiUrl);
-                const json = await response.json();
-                if (json.code === 200 && json.data.teams) {
-                    const teams = json.data.teams;
-                    for (let team of teams) {
-                        for (let player of team.players) {
-                            if (player.match_kills > 0) {
-                                triggerFirstKillAlert(player.name, team.team_logo);
-                                hasFirstKill = true;
-                                return; 
-                            }
-                        }
-                    }
-                }
-            } catch (e) { console.error("API Error:", e); }
-        }
-
-        function triggerFirstKillAlert(playerName, logoName) {
-            const container = document.getElementById('first-kill-container');
-            
-            // ดึงโลโก้จาก XAMPP Localhost ของเครื่องคุณ
-            document.getElementById('team-logo').src = `http://localhost/Keng/assets/logos/${logoName}.png`;
-            
-            document.getElementById('player-name').textContent = playerName;
-
-            container.classList.remove('slide-down', 'slide-up', 'hidden');
-            void container.offsetWidth; 
-            container.classList.add('slide-up');
-
-            setTimeout(() => {
-                container.classList.replace('slide-up', 'slide-down');
-            }, 7000);
-        }
-
-        setInterval(checkFirstKill, 2000);
-    </script>
 </body>
 </html>
